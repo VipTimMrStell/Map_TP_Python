@@ -29,7 +29,6 @@ class MapCanvas(QWidget):
 
     def set_route_mode(self, enabled: bool):
         if not enabled and self.current_route:
-            # Завершаем текущий маршрут, если был начат
             self.routes.append((self.current_route.copy(), self.route_color))
             self.current_route.clear()
             self.update()
@@ -64,12 +63,16 @@ class MapCanvas(QWidget):
             painter.translate(self._offset)
             painter.drawPixmap(0, 0, int(w), int(h), self.background)
 
-            # --- Рисуем значки ---
+            # --- Рисуем значки с масштабом ЗДЕСЬ МЕНЯТЬ МАСШТАБ ЗНАЧКОВ ---
+            base_icon_size = 128  # Базовый размер при zoom=1
             for x, y, icon_path in self.icons_on_map:
                 pix = QPixmap(icon_path)
-                pix = pix.scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-                draw_x = x * self.zoom - 16
-                draw_y = y * self.zoom - 16
+                icon_size = int(base_icon_size * self.zoom)
+                if icon_size < 8:
+                    icon_size = 8  # Минимальный размер для видимости
+                pix = pix.scaled(icon_size, icon_size, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+                draw_x = x * self.zoom - icon_size // 2
+                draw_y = y * self.zoom - icon_size // 2
                 painter.drawPixmap(int(draw_x), int(draw_y), pix)
         else:
             painter.translate(self._offset)
