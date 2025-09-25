@@ -102,7 +102,20 @@ class MapCanvas(QWidget):
         )
         self.update()
 
+'''
     def reset_view(self):
-        self.zoom = 1.0
-        self._offset = QPointF(0, 0)
+        if self.background:
+            self.zoom = 1.0
+            # Центрируем картинку в виджете
+            img_w = self.background.width()
+            img_h = self.background.height()
+            win_w = self.width()
+            win_h = self.height()
+            offset_x = (win_w - img_w) / 2
+            offset_y = (win_h - img_h) / 2
+            self._offset = QPointF(offset_x, offset_y)
+        else:
+            self.zoom = 1.0
+            self._offset = QPointF(0, 0)
         self.update()
+'''

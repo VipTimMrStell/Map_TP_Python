@@ -32,9 +32,9 @@ class MainWindow(QMainWindow):
         zoom_out_action.triggered.connect(self.canvas.zoom_out)
         toolbar.addAction(zoom_out_action)
 
-        reset_view_action = QAction("Сбросить вид", self)
+        """reset_view_action = QAction("Сбросить вид", self)
         reset_view_action.triggered.connect(self.canvas.reset_view)
-        toolbar.addAction(reset_view_action)
+        toolbar.addAction(reset_view_action)"""
 
         # TODO: add other tool actions (маршруты, значки, текст, undo/redo, delete)
 
