@@ -12,17 +12,25 @@ class MapCanvas(QWidget):
         self._min_zoom = 0.2
         self._max_zoom = 5.0
 
-        self._offset = QPointF(0, 0)  # Смещение карты (панорамирование)
+        self._offset = QPointF(0, 0)
         self._dragging = False
         self._last_mouse_pos = QPoint()
 
-        # === Для маршрута ===
-        self.route_points = []  # точки маршрута в координатах карты (float)
+        # --- Храним все маршруты как список списков ---
+        self.routes = []                # Все нарисованные маршруты (список списков точек)
+        self.current_route = []         # Активный маршрут (точки)
         self.is_route_mode = False
-        self.route_color = QColor(Qt.GlobalColor.red)  # Цвет маршрута по умолчанию
+        self.route_color = QColor(Qt.GlobalColor.red)
 
     def set_route_mode(self, enabled: bool):
+        if not enabled and self.current_route:
+            # Завершаем текущий маршрут, если был начат
+            self.routes.append((self.current_route.copy(), self.route_color))
+            self.current_route.clear()
+            self.update()
         self.is_route_mode = enabled
+        if enabled:
+            self.current_route = []
 
     def set_route_color(self, color: QColor):
         self.route_color = color
@@ -32,7 +40,8 @@ class MapCanvas(QWidget):
         self.background = QPixmap(path)
         self.zoom = 1.0
         self._offset = QPointF(0, 0)
-        self.route_points = []
+        self.routes = []
+        self.current_route = []
         self.update()
 
     def paintEvent(self, event):
@@ -42,13 +51,26 @@ class MapCanvas(QWidget):
             h = self.background.height() * self.zoom
             painter.translate(self._offset)
             painter.drawPixmap(0, 0, int(w), int(h), self.background)
-        # --- Рисуем маршрут ---
-        if len(self.route_points) > 1:
+
+        # --- Рисуем все завершённые маршруты ---
+        for route, color in self.routes:
+            if len(route) > 1:
+                pen = QPen(color, 3)
+                painter.setPen(pen)
+                points = [
+                    QPointF(x * self.zoom, y * self.zoom)
+                    for (x, y) in route
+                ]
+                for i in range(len(points) - 1):
+                    painter.drawLine(points[i], points[i + 1])
+
+        # --- Рисуем текущий маршрут, если он есть ---
+        if len(self.current_route) > 1:
             pen = QPen(self.route_color, 3)
             painter.setPen(pen)
             points = [
                 QPointF(x * self.zoom, y * self.zoom)
-                for (x, y) in self.route_points
+                for (x, y) in self.current_route
             ]
             for i in range(len(points) - 1):
                 painter.drawLine(points[i], points[i + 1])
@@ -75,10 +97,9 @@ class MapCanvas(QWidget):
 
     def mousePressEvent(self, event: QMouseEvent):
         if self.is_route_mode and event.button() == Qt.MouseButton.LeftButton and self.background:
-            # Координаты клика — в координаты карты!
             x = (event.position().x() - self._offset.x()) / self.zoom
             y = (event.position().y() - self._offset.y()) / self.zoom
-            self.route_points.append((x, y))
+            self.current_route.append((x, y))
             self.update()
             return
         if event.button() == Qt.MouseButton.LeftButton:
@@ -122,5 +143,11 @@ class MapCanvas(QWidget):
         self.update()
 
     def clear_route(self):
-        self.route_points = []
+        self.routes = []
+        self.current_route = []
         self.update()
+
+    def remove_last_route(self):
+        if self.routes:
+            self.routes.pop()
+            self.update()

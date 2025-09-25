@@ -38,7 +38,13 @@ class MainWindow(QMainWindow):
         self.route_action.toggled.connect(self.toggle_route_mode)
         toolbar.addAction(self.route_action)
 
-        clear_route_action = QAction("Очистить маршрут", self)
+        # --- КНОПКА УДАЛЕНИЯ ПОСЛЕДНЕГО МАРШРУТА ---
+        remove_last_action = QAction("Удалить последний маршрут", self)
+        remove_last_action.triggered.connect(self.canvas.remove_last_route)
+        toolbar.addAction(remove_last_action)
+
+        # --- КНОПКА ОЧИСТКИ ВСЕХ МАРШРУТОВ ---
+        clear_route_action = QAction("Очистить все маршруты", self)
         clear_route_action.triggered.connect(self.canvas.clear_route)
         toolbar.addAction(clear_route_action)
 
