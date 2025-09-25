@@ -1,7 +1,9 @@
-from PyQt6.QtWidgets import QMainWindow, QFileDialog, QToolBar, QMessageBox, QPushButton, QHBoxLayout, QWidget
-from PyQt6.QtGui import QIcon, QAction
+from PyQt6.QtWidgets import QMainWindow, QFileDialog, QToolBar, QMessageBox
+from PyQt6.QtGui import QIcon
 from views.map_canvas import MapCanvas
 from models.map_model import MapModel
+from PyQt6.QtWidgets import QMainWindow, QFileDialog, QToolBar, QMessageBox
+from PyQt6.QtGui import QIcon, QAction
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -32,14 +34,20 @@ class MainWindow(QMainWindow):
         zoom_out_action.triggered.connect(self.canvas.zoom_out)
         toolbar.addAction(zoom_out_action)
 
-        """reset_view_action = QAction("Сбросить вид", self)
-        reset_view_action.triggered.connect(self.canvas.reset_view)
-        toolbar.addAction(reset_view_action)"""
+        # --- КНОПКА РИСОВАНИЯ МАРШРУТА ---
+        self.route_action = QAction("Режим: Маршрут", self)
+        self.route_action.setCheckable(True)
+        self.route_action.toggled.connect(self.toggle_route_mode)
+        toolbar.addAction(self.route_action)
 
-        # TODO: add other tool actions (маршруты, значки, текст, undo/redo, delete)
+        clear_route_action = QAction("Очистить маршрут", self)
+        clear_route_action.triggered.connect(self.canvas.clear_route)
+        toolbar.addAction(clear_route_action)
+
+    def toggle_route_mode(self, checked):
+        self.canvas.set_route_mode(checked)
 
     def _create_menus(self):
-        # Optionally add menus here
         pass
 
     def open_map(self):
