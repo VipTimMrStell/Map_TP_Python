@@ -1,4 +1,5 @@
-from PyQt6.QtWidgets import QMainWindow, QFileDialog, QToolBar, QAction, QMessageBox
+from PyQt6.QtWidgets import QMainWindow, QFileDialog, QToolBar, QMessageBox
+from PyQt6.QtGui import QAction
 from PyQt6.QtGui import QIcon
 from views.map_canvas import MapCanvas
 from models.map_model import MapModel
