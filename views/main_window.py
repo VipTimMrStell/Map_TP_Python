@@ -1,9 +1,7 @@
-from PyQt6.QtWidgets import QMainWindow, QFileDialog, QToolBar, QMessageBox
-from PyQt6.QtGui import QIcon
+from PyQt6.QtWidgets import QMainWindow, QFileDialog, QToolBar, QMessageBox, QColorDialog
+from PyQt6.QtGui import QIcon, QAction
 from views.map_canvas import MapCanvas
 from models.map_model import MapModel
-from PyQt6.QtWidgets import QMainWindow, QFileDialog, QToolBar, QMessageBox
-from PyQt6.QtGui import QIcon, QAction
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -43,6 +41,16 @@ class MainWindow(QMainWindow):
         clear_route_action = QAction("Очистить маршрут", self)
         clear_route_action.triggered.connect(self.canvas.clear_route)
         toolbar.addAction(clear_route_action)
+
+        # --- КНОПКА ВЫБОРА ЦВЕТА ---
+        color_action = QAction("Цвет маршрута", self)
+        color_action.triggered.connect(self.choose_route_color)
+        toolbar.addAction(color_action)
+
+    def choose_route_color(self):
+        color = QColorDialog.getColor(self.canvas.route_color, self, "Выберите цвет маршрута")
+        if color.isValid():
+            self.canvas.set_route_color(color)
 
     def toggle_route_mode(self, checked):
         self.canvas.set_route_mode(checked)

@@ -1,5 +1,5 @@
-from PyQt6.QtWidgets import QWidget
-from PyQt6.QtGui import QPainter, QPixmap, QMouseEvent, QWheelEvent, QPen
+from PyQt6.QtWidgets import QWidget, QColorDialog
+from PyQt6.QtGui import QPainter, QPixmap, QMouseEvent, QWheelEvent, QPen, QColor
 from PyQt6.QtCore import Qt, QPoint, QPointF
 
 class MapCanvas(QWidget):
@@ -19,9 +19,14 @@ class MapCanvas(QWidget):
         # === Для маршрута ===
         self.route_points = []  # точки маршрута в координатах карты (float)
         self.is_route_mode = False
+        self.route_color = QColor(Qt.GlobalColor.red)  # Цвет маршрута по умолчанию
 
     def set_route_mode(self, enabled: bool):
         self.is_route_mode = enabled
+
+    def set_route_color(self, color: QColor):
+        self.route_color = color
+        self.update()
 
     def load_background(self, path):
         self.background = QPixmap(path)
@@ -39,7 +44,7 @@ class MapCanvas(QWidget):
             painter.drawPixmap(0, 0, int(w), int(h), self.background)
         # --- Рисуем маршрут ---
         if len(self.route_points) > 1:
-            pen = QPen(Qt.GlobalColor.red, 3)
+            pen = QPen(self.route_color, 3)
             painter.setPen(pen)
             points = [
                 QPointF(x * self.zoom, y * self.zoom)
