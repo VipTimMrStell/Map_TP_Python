@@ -1,6 +1,7 @@
-from PyQt6.QtWidgets import QMainWindow, QFileDialog, QToolBar, QMessageBox, QColorDialog
+from PyQt6.QtWidgets import QMainWindow, QFileDialog, QToolBar, QMessageBox, QColorDialog, QDialog, QVBoxLayout, QPushButton
 from PyQt6.QtGui import QIcon, QAction
 from views.map_canvas import MapCanvas
+from views.icon_tool import IconSelector
 from models.map_model import MapModel
 
 class MainWindow(QMainWindow):
@@ -12,6 +13,7 @@ class MainWindow(QMainWindow):
         self.model = MapModel()
         self.canvas = MapCanvas(self.model)
         self.setCentralWidget(self.canvas)
+        self.selected_icon_path = None
 
         self._create_toolbar()
         self._create_menus()
@@ -52,6 +54,41 @@ class MainWindow(QMainWindow):
         color_action = QAction("Цвет маршрута", self)
         color_action.triggered.connect(self.choose_route_color)
         toolbar.addAction(color_action)
+
+        # --- КНОПКИ ДОБАВЛЕНИЯ ИКОНКИ ---
+        add_blue_icon_action = QAction("Добавить синий значок", self)
+        add_blue_icon_action.triggered.connect(self.select_blue_icon)
+        toolbar.addAction(add_blue_icon_action)
+
+        add_red_icon_action = QAction("Добавить красный значок", self)
+        add_red_icon_action.triggered.connect(self.select_red_icon)
+        toolbar.addAction(add_red_icon_action)
+
+    def select_blue_icon(self):
+        self.open_icon_selector("materials/icons_blue", "Синий значок")
+
+    def select_red_icon(self):
+        self.open_icon_selector("materials/icons_red", "Красный значок")
+
+    def open_icon_selector(self, folder_path, label):
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Выберите значок")
+        layout = QVBoxLayout(dialog)
+        selector = IconSelector(folder_path, label + ": ")
+        layout.addWidget(selector)
+        ok_btn = QPushButton("OK")
+        layout.addWidget(ok_btn)
+
+        def on_ok():
+            self.selected_icon_path = selector.get_selected_icon_path()
+            dialog.accept()
+        ok_btn.clicked.connect(on_ok)
+
+        if dialog.exec():
+            if self.selected_icon_path:
+                self.canvas.set_icon_add_mode(self.selected_icon_path)
+        else:
+            self.selected_icon_path = None
 
     def choose_route_color(self):
         color = QColorDialog.getColor(self.canvas.route_color, self, "Выберите цвет маршрута")

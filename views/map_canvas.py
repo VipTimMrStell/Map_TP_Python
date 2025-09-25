@@ -22,6 +22,11 @@ class MapCanvas(QWidget):
         self.is_route_mode = False
         self.route_color = QColor(Qt.GlobalColor.red)
 
+        # --- Для значков ---
+        self.icon_add_mode = False
+        self.icon_path_to_add = None
+        self.icons_on_map = []  # [(x, y, path), ...]
+
     def set_route_mode(self, enabled: bool):
         if not enabled and self.current_route:
             # Завершаем текущий маршрут, если был начат
@@ -36,12 +41,19 @@ class MapCanvas(QWidget):
         self.route_color = color
         self.update()
 
+    def set_icon_add_mode(self, icon_path):
+        self.icon_add_mode = True
+        self.icon_path_to_add = icon_path
+
     def load_background(self, path):
         self.background = QPixmap(path)
         self.zoom = 1.0
         self._offset = QPointF(0, 0)
         self.routes = []
         self.current_route = []
+        self.icons_on_map = []
+        self.icon_add_mode = False
+        self.icon_path_to_add = None
         self.update()
 
     def paintEvent(self, event):
@@ -51,6 +63,16 @@ class MapCanvas(QWidget):
             h = self.background.height() * self.zoom
             painter.translate(self._offset)
             painter.drawPixmap(0, 0, int(w), int(h), self.background)
+
+            # --- Рисуем значки ---
+            for x, y, icon_path in self.icons_on_map:
+                pix = QPixmap(icon_path)
+                pix = pix.scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+                draw_x = x * self.zoom - 16
+                draw_y = y * self.zoom - 16
+                painter.drawPixmap(int(draw_x), int(draw_y), pix)
+        else:
+            painter.translate(self._offset)
 
         # --- Рисуем все завершённые маршруты ---
         for route, color in self.routes:
@@ -96,6 +118,15 @@ class MapCanvas(QWidget):
         self.update()
 
     def mousePressEvent(self, event: QMouseEvent):
+        if self.icon_add_mode and event.button() == Qt.MouseButton.LeftButton and self.background:
+            x = (event.position().x() - self._offset.x()) / self.zoom
+            y = (event.position().y() - self._offset.y()) / self.zoom
+            self.icons_on_map.append((x, y, self.icon_path_to_add))
+            self.icon_add_mode = False
+            self.icon_path_to_add = None
+            self.update()
+            return
+
         if self.is_route_mode and event.button() == Qt.MouseButton.LeftButton and self.background:
             x = (event.position().x() - self._offset.x()) / self.zoom
             y = (event.position().y() - self._offset.y()) / self.zoom
